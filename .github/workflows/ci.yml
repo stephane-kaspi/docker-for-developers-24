@@ -1,0 +1,14 @@
+name: ci
+on: { push: { branches: [main] } }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t myapp:${{ github.sha }} .
+      - run: docker run --rm myapp:${{ github.sha }} npm test
+      - name: Push
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+          docker tag myapp:${{ github.sha }} levep79/myapp:${{ github.sha }}
+          docker push levep79/myapp:${{ github.sha }}
